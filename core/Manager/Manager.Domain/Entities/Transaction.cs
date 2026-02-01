@@ -19,6 +19,9 @@ public sealed class Transaction
     public Guid PersonId { get; private set; }
     public Guid CategoryId { get; private set; }
 
+    public Person? Person { get; private set; }
+    public Category? Category { get; private set; } 
+
     //EF Core
     private Transaction() { }
 
