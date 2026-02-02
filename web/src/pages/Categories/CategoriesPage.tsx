@@ -61,7 +61,6 @@ export function CategoriesPage() {
         return categories.map((c) => [
             <div className={styles.descCell} key={c.id}>
                 <div className={styles.desc}>{c.description}</div>
-                <div className={styles.sub}>ID: {c.id}</div>
             </div>,
             <Badge
                 key={c.id + "-badge"}

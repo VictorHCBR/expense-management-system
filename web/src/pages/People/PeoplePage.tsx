@@ -68,7 +68,6 @@ export function PeoplePage() {
         return people.map((p) => [
             <div className={styles.nameCell} key={p.id}>
                 <div className={styles.name}>{p.name}</div>
-                <div className={styles.sub}>ID: {p.id}</div>
             </div>,
             <span key={p.id + "-age"}>{p.age}</span>,
             <div className={styles.actions} key={p.id + "-actions"}>

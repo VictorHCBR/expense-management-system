@@ -45,7 +45,7 @@ export function AppLayout({ children }: Props) {
             </main>
 
             <footer className={styles.footer}>
-                <span>API: .NET + EF Core + PostgreSQL • UI: React + CSS</span>
+                <span>Gerenciador de Despesas Residenciais</span>
             </footer>
         </div>
     );

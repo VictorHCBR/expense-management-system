@@ -8,23 +8,24 @@ export function DashboardPage() {
         <div className="stack">
             <PageHeader
                 title="Visão geral"
-                subtitle="Cadastre pessoas, categorias e transações. Em seguida, consulte os totais por pessoa e por categoria."
+                subtitle="Aproveite o poder. Crie pessoas, categorias e gerencie seus gastos!"
             />
 
             <div className={styles.grid}>
                 <Card
                     title="Pessoas"
-                    description="CRUD completo (criar, editar, remover, listar). Ao remover, as transações são apagadas pelo banco (cascade)."
+                    description="Crie Pessoas com suas informações! Cuidado ao deletar hein! 🤷‍♂️"
                     actions={<Link className={styles.link} to="/people">Abrir</Link>}
                 >
                     <p className={styles.text}>
-                        Regras: nome obrigatório (máx 200), idade não-negativa.
+                        Regras: Nome obrigatório (máx 200), Idade não-negativa.
                     </p>
                 </Card>
 
                 <Card
                     title="Categorias"
-                    description="Criação e listagem. A finalidade controla em quais tipos de transação a categoria pode ser usada."
+                    description="Criação e listagem.
+                        A finalidade controla em quais tipos de transação a categoria pode ser usada."
                     actions={<Link className={styles.link} to="/categories">Abrir</Link>}
                 >
                     <p className={styles.text}>
@@ -34,7 +35,10 @@ export function DashboardPage() {
 
                 <Card
                     title="Transações"
-                    description="Criação e listagem. Regras: valor positivo; menor de 18 anos só aceita despesas; categoria deve ser compatível com o tipo."
+                    description="Crie e veja as suas transações em casa. 🤯
+                        Regras: Valor positivo;
+                        Menores de 18 anos apenas registram despesas;
+                        A categoria deve ser compatível com o tipo."
                     actions={<Link className={styles.link} to="/transactions">Abrir</Link>}
                 >
                     <p className={styles.text}>
@@ -48,7 +52,7 @@ export function DashboardPage() {
                     actions={<Link className={styles.link} to="/reports">Abrir</Link>}
                 >
                     <p className={styles.text}>
-                        Ideal para validar rapidamente se as regras estão funcionando.
+                        Você consegue ver os gastos!
                     </p>
                 </Card>
             </div>
