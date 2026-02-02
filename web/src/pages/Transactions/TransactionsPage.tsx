@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CategoryResponse, PersonResponse, TransactionResponse } from "../../types/domain";
 import { CategoryPurpose, TransactionType } from "../../types/domain";
-import { formatCurrencyBRL, formatDateTime } from "../../utils/format";
+import { CategoriesApi, PeopleApi, TransactionsApi } from "../../services/api";
+import { useAsync } from "../../hooks/useAync";
+import { formatCurrencyBRL } from "../../utils/format";
 import { purposeLabel, transactionTypeLabel } from "../../utils/labels";
 import type { FieldErrors } from "../../utils/validation";
+import { nonEmpty, maxLen } from "../../utils/validation";
 import { PageHeader } from "../../components/ui/PageHeader/PageHeader";
 import { Card } from "../../components/ui/Card/Card";
 import { Input } from "../../components/ui/Input/Input";
@@ -12,9 +15,10 @@ import { Badge } from "../../components/ui/Badge/Badge";
 import { Button } from "../../components/ui/Button/Button";
 import { Table } from "../../components/ui/Table/Table";
 import { Alert } from "../../components/ui/Alert/Alert";
+import { Spinner } from "../../components/ui/Spinner/Spinner";
 import styles from "./TransactionsPage.module.css";
 
-type CreateFields = "description" | "value" | "type" | "categoryId" | "personId";
+type CreateFields = "description" | "amount" | "type" | "categoryId" | "personId";
 
 function compatibleCategory(purpose: CategoryPurpose, type: TransactionType): boolean {
     if (purpose === CategoryPurpose.Both) return true;
@@ -24,16 +28,40 @@ function compatibleCategory(purpose: CategoryPurpose, type: TransactionType): bo
 }
 
 export function TransactionsPage() {
-    const [people] = useState<PersonResponse[]>([]);
-    const [categories] = useState<CategoryResponse[]>([]);
-    const [transactions] = useState<TransactionResponse[]>([]);
+    const [people, setPeople] = useState<PersonResponse[]>([]);
+    const [categories, setCategories] = useState<CategoryResponse[]>([]);
+    const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
 
     const [description, setDescription] = useState("");
-    const [value, setValue] = useState<number>(0);
+    const [amount, setAmount] = useState<number>(0);
     const [type, setType] = useState<TransactionType>(TransactionType.Expense);
     const [personId, setPersonId] = useState<string>("");
     const [categoryId, setCategoryId] = useState<string>("");
     const [errors, setErrors] = useState<FieldErrors<CreateFields>>({});
+
+    const loadLookupsAsync = useAsync(async () => {
+        const [p, c] = await Promise.all([PeopleApi.list(), CategoriesApi.list()]);
+        setPeople(p.items);
+        setCategories(c.items);
+    });
+
+    const listAsync = useAsync(async () => {
+        const data = await TransactionsApi.list();
+        setTransactions(data.items);
+    });
+
+    const createAsync = useAsync(async () => {
+        const created = await TransactionsApi.create({ description, amount, type, categoryId, personId });
+        setTransactions((prev) => [created, ...prev]);
+        setDescription("");
+        setAmount(0);
+    });
+
+    useEffect(() => {
+        loadLookupsAsync.run().catch(() => void 0);
+        listAsync.run().catch(() => void 0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const selectedPerson = useMemo(() => people.find((p) => p.id === personId) ?? null, [people, personId]);
     const isMinor = (selectedPerson?.age ?? 18) < 18;
@@ -68,14 +96,8 @@ export function TransactionsPage() {
         [compatibleCategories]
     );
 
-    const categoryById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
-    const personById = useMemo(() => new Map(people.map((p) => [p.id, p])), [people]);
-
     const rows = useMemo(() => {
         return transactions.map((t) => {
-            const p = personById.get(t.personId);
-            const c = categoryById.get(t.categoryId);
-
             const badgeVariant = t.type === TransactionType.Income ? "ok" : "warn";
 
             return [
@@ -84,26 +106,64 @@ export function TransactionsPage() {
                     <div className={styles.sub}>ID: {t.id}</div>
                 </div>,
                 <Badge key={t.id + "-type"} text={transactionTypeLabel(t.type)} variant={badgeVariant} />,
-                <span key={t.id + "-value"} className={styles.value}>{formatCurrencyBRL(t.value)}</span>,
+                <span key={t.id + "-amount"} className={styles.value}>{formatCurrencyBRL(t.amount)}</span>,
                 <div className={styles.subCell} key={t.id + "-person"}>
-                    <div className={styles.primary}>{p ? p.name : t.personId}</div>
-                    <div className={styles.sub}>{p ? `Idade: ${p.age}` : "Pessoa não carregada"}</div>
+                    <div className={styles.primary}>{t.personName}</div>
                 </div>,
                 <div className={styles.subCell} key={t.id + "-category"}>
-                    <div className={styles.primary}>{c ? c.description : t.categoryId}</div>
-                    <div className={styles.sub}>{c ? purposeLabel(c.purpose) : "Categoria não carregada"}</div>
-                </div>,
-                <span key={t.id + "-date"} className={styles.muted}>{formatDateTime(t.createdAtUtc)}</span>
+                    <div className={styles.primary}>{t.categoryDescription}</div>
+                    <div className={styles.sub}>{purposeLabel(categories.find(c => c.id === t.categoryId)?.purpose ?? CategoryPurpose.Both)}</div>
+                </div>
             ];
         });
-    }, [transactions, personById, categoryById]);
+    }, [transactions, categories]);
+
+    function validate(): FieldErrors<CreateFields> {
+        const e: FieldErrors<CreateFields> = {};
+        if (!nonEmpty(description)) e.description = "Descrição é obrigatória.";
+        else if (!maxLen(description, 400)) e.description = "Descrição deve ter no máximo 400 caracteres.";
+
+        if (!Number.isFinite(amount) || amount <= 0) e.amount = "Valor deve ser maior que 0.";
+
+        if (![TransactionType.Expense, TransactionType.Income].includes(type)) e.type = "Tipo inválido.";
+
+        if (!personId) e.personId = "Selecione uma pessoa.";
+        if (!categoryId) e.categoryId = "Selecione uma categoria.";
+
+        const cat = categories.find((c) => c.id === categoryId);
+        if (cat && !compatibleCategory(cat.purpose, type)) e.categoryId = "Categoria incompatível com o tipo.";
+
+        if (isMinor && type === TransactionType.Income) e.type = "Menor de idade não pode registrar receitas.";
+
+        return e;
+    }
+
+    function submit() {
+        const e = validate();
+        setErrors(e);
+        if (Object.keys(e).length > 0) return;
+        createAsync.run().catch(() => void 0);
+    }
 
     return (
         <div className="stack">
             <PageHeader
                 title="Transações"
-                subtitle="Crie e liste despesas/receitas. Regras: valor positivo; menor de idade só aceita despesas; categoria precisa ser compatível."
+                subtitle="Crie e liste despesas/receitas. Regras: valor positivo; menor de 18 anos só aceita despesas; categoria precisa ser compatível."
+                actions={
+                    <Button variant="ghost" onClick={() => listAsync.run().catch(() => void 0)} disabled={listAsync.loading}>
+                        {listAsync.loading ? <Spinner /> : "Recarregar"}
+                    </Button>
+                }
             />
+
+            {(loadLookupsAsync.error || listAsync.error || createAsync.error) && (
+                <Alert
+                    title="Erro"
+                    message={loadLookupsAsync.error || listAsync.error || createAsync.error || "Erro"}
+                    variant="error"
+                />
+            )}
 
             {isMinor && (
                 <Alert
@@ -112,14 +172,7 @@ export function TransactionsPage() {
                 />
             )}
 
-            <Card
-                title="Criar transação"
-                description="Escolha pessoa, tipo, categoria e informe descrição e valor."
-                actions={
-                    <Button>
-                    </Button>
-                }
-            >
+            <Card title="Criar transação" description="Escolha pessoa, tipo, categoria e informe descrição e valor.">
                 <div className="grid2">
                     <Select
                         label="Pessoa"
@@ -152,11 +205,11 @@ export function TransactionsPage() {
                     <Input
                         label="Valor"
                         type="number"
-                        value={String(value)}
-                        onChange={(e) => setValue(Number(e.target.value))}
+                        value={String(amount)}
+                        onChange={(e) => setAmount(Number(e.target.value))}
                         min={0}
                         step="0.01"
-                        error={errors.value}
+                        error={errors.amount}
                     />
 
                     <div className={styles.full}>
@@ -172,13 +225,14 @@ export function TransactionsPage() {
                 </div>
 
                 <div className={styles.formActions}>
-                    <Button>
+                    <Button onClick={submit} disabled={createAsync.loading}>
+                        {createAsync.loading ? <Spinner /> : "Criar"}
                     </Button>
                     <Button
                         variant="ghost"
                         onClick={() => {
                             setDescription("");
-                            setValue(0);
+                            setAmount(0);
                             setErrors({});
                         }}
                     >
@@ -188,7 +242,7 @@ export function TransactionsPage() {
             </Card>
 
             <Card title="Lista" description="Transações mais recentes primeiro.">
-                <Table headers={["Descrição", "Tipo", "Valor", "Pessoa", "Categoria", "Data/Hora"]} rows={rows} />
+                <Table headers={["Descrição", "Tipo", "Valor", "Pessoa", "Categoria"]} rows={rows} />
             </Card>
         </div>
     );

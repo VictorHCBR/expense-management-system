@@ -1,5 +1,13 @@
 export type Guid = string;
 
+// Generic paged response used by list endpoints
+export type PagedResponse<T> = {
+    items: T[];
+    totalItems: number;
+    page: number;
+    pageSize: number;
+};
+
 export enum CategoryPurpose {
     Expense = 1,
     Income = 2,
@@ -26,37 +34,23 @@ export type CategoryResponse = {
 export type TransactionResponse = {
     id: Guid;
     description: string;
-    value: number;
+    amount: number;
     type: TransactionType;
-    categoryId: Guid;
     personId: Guid;
-    createdAtUtc: string;
+    personName: string;
+    categoryId: Guid;
+    categoryDescription: string;
 };
 
-export type Totals = {
+// Reports (matches Manager.Application.DTOs.ReportDtos)
+export type TotalsRowResponse = {
+    id: Guid;
+    name: string;
     totalIncome: number;
     totalExpense: number;
     balance: number;
 };
 
-export type PersonTotals = {
-    personId: Guid;
-    personName: string;
-    totals: Totals;
-};
-
-export type CategoryTotals = {
-    categoryId: Guid;
-    categoryDescription: string;
-    totals: Totals;
-};
-
-export type TotalsByPersonResponse = {
-    items: PersonTotals[];
-    grandTotal: Totals;
-};
-
-export type TotalsByCategoryResponse = {
-    items: CategoryTotals[];
-    grandTotal: Totals;
+export type TotalsReportResponse = PagedResponse<TotalsRowResponse> & {
+    grandTotal: TotalsRowResponse;
 };

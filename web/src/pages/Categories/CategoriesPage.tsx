@@ -27,7 +27,7 @@ export function CategoriesPage() {
 
     const listAsync = useAsync(async () => {
         const data = await CategoriesApi.list();
-        setCategories(data);
+        setCategories(data.items);
     });
 
     const createAsync = useAsync(async () => {
