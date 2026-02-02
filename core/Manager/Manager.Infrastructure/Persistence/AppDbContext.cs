@@ -43,7 +43,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             builder.HasOne(x => x.Category)
                 .WithMany()
-                .HasForeignKey()
+                .HasForeignKey(x => x.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict); //Como pode haver mais de uma transação com a mesma categoria,
                                                     //então não faz sentido deletar a categoria de vez
         });
