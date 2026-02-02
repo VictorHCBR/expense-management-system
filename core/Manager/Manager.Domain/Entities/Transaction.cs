@@ -20,16 +20,15 @@ public sealed class Transaction
     public Guid CategoryId { get; private set; }
 
     public Person? Person { get; private set; }
-    public Category? Category { get; private set; } 
+    public Category? Category { get; set; }
 
     //EF Core
     private Transaction() { }
 
     public Transaction(string description, decimal amount, TransactionType type, Guid personId, Guid categoryId)
     {
-        ValidationHelper.SetDescription(description);
-        ValidationHelper.SetAmount(amount);
-
+        Description = ValidationHelper.SetDescription(description);
+        Amount = ValidationHelper.SetAmount(amount);
         Type = type;
         PersonId = personId;
         CategoryId = categoryId;

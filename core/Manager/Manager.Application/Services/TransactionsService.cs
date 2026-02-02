@@ -24,13 +24,13 @@ public sealed class TransactionsService(
         var category = await _categories.GetByIdAsync(request.CategoryId, token)
             ?? throw new DomainException("Categoria não encontrada.");
 
-        if (person.Age < 18 && request.Type != Domain.Enums.TransactionType.Expense)
+        if (person.Age < 18 && request.Type != TransactionType.Expense)
             throw new DomainException("Pessoaz menores de 18 anos só podem registrar despesas.");
 
         var isAllowed = category.Purpose switch
         {
-            Domain.Enums.CategoryPurpose.Expense => request.Type == Domain.Enums.TransactionType.Expense,
-            Domain.Enums.CategoryPurpose.Income => request.Type == Domain.Enums.TransactionType.Income,
+            CategoryPurpose.Expense => request.Type == TransactionType.Expense,
+            CategoryPurpose.Income => request.Type == TransactionType.Income,
             _ => false
         };
 
