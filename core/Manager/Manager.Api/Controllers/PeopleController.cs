@@ -31,7 +31,7 @@ public class PeopleController(PeopleService service) : ControllerBase
         [FromQuery] int? minAge,
         [FromQuery] int? maxAge,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] int pageSize = 10,
         CancellationToken token = default)
     {
         var (items, total) = await _service.ListAsync(name, minAge, maxAge, page, pageSize, token);

@@ -32,7 +32,7 @@ public class CategoriesController(CategoriesService service) : ControllerBase
         [FromQuery] string? description,
         [FromQuery] CategoryPurpose? purpose,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] int pageSize = 10,
         CancellationToken token = default)
     {
         var (items, total) = await _service.ListAsync(description, purpose, page, pageSize, token);
