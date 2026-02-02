@@ -1,0 +1,35 @@
+.stat {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    background: var(--surface1);
+}
+
+.label {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+}
+
+.value {
+    margin-top: 6px;
+    font-weight: 900;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+}
+
+.hint {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.ok {
+    border-color: color-mix(in oklab, var(--ok) 35%, var(--border));
+}
+
+.warn {
+    border-color: color-mix(in oklab, var(--danger) 35%, var(--border));
+}

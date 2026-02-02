@@ -1,0 +1,46 @@
+.btn {
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.primary {
+    background: var(--accent);
+    color: white;
+}
+
+.primary:hover {
+    background: color-mix(in oklab, var(--accent) 90%, black);
+}
+
+.ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.ghost:hover {
+    background: color-mix(in oklab, var(--panel) 70%, var(--bg));
+}
+
+.danger {
+    background: var(--danger);
+    color: white;
+}
+
+.danger:hover {
+    background: color-mix(in oklab, var(--danger) 90%, black);
+}

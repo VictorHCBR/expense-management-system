@@ -1,0 +1,25 @@
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    border: 1px solid var(--border);
+    background: var(--surface1);
+}
+
+.neutral {
+    color: var(--text);
+}
+
+.ok {
+    color: color-mix(in oklab, var(--ok) 95%, var(--mix-contrast));
+    border-color: color-mix(in oklab, var(--ok) 40%, var(--border));
+}
+
+.warn {
+    color: color-mix(in oklab, var(--danger) 95%, var(--mix-contrast));
+    border-color: color-mix(in oklab, var(--danger) 40%, var(--border));
+}

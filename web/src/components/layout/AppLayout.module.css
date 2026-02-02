@@ -1,0 +1,98 @@
+.shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: color-mix(in oklab, var(--panel) 85%, var(--bg));
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 20%, transparent);
+}
+
+.title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+.nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.link,
+.active {
+    padding: 8px 10px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text);
+    border: 1px solid transparent;
+    font-size: 14px;
+}
+
+.link:hover {
+    background: color-mix(in oklab, var(--panel) 70%, var(--bg));
+    border-color: var(--border);
+}
+
+.active {
+    background: color-mix(in oklab, var(--accent) 15%, var(--panel));
+    border-color: color-mix(in oklab, var(--accent) 35%, var(--border));
+}
+
+.main {
+    flex: 1;
+    padding: 20px 18px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.footer {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
