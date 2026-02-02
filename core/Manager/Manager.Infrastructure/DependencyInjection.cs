@@ -1,5 +1,7 @@
 ﻿using Manager.Application.Contracts;
+using Manager.Application.Services;
 using Manager.Infrastructure.Persistence;
+using Manager.Infrastructure.Reports;
 using Manager.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<IReportsQueries, ReportsQueries>();
 
         return services;
     }
