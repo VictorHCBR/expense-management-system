@@ -1,5 +1,5 @@
 import { Button } from "../Button/Button";
-import { useTheme } from "../../../theme/ThemeContext";
+import { useTheme } from '../../../theme/ThemeContext';
 import styles from "./ThemeToggle.module.css";
 
 export function ThemeToggle() {

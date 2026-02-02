@@ -13,7 +13,7 @@ export function AppLayout({ children }: Props) {
                     <span className={styles.dot} aria-hidden="true" />
                     <div>
                         <div className={styles.title}>Controle de Gastos</div>
-                        <div className={styles.subtitle}>Residencial • </div>
+                        <div className={styles.subtitle}>Residencial • Ajudante</div>
                     </div>
                 </div>
 

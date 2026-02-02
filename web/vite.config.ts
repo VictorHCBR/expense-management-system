@@ -1,13 +1,19 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-// https://vite.dev/config/
+/**
+ * Dev sem Docker:
+ * proxy /api -> backend (localhost:8080), evitando CORS.
+ *
+ * Em Docker:
+ * Nginx do container web proxy /api -> api:8080.
+ */
 export default defineConfig({
-  plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler']],
-      },
-    }),
-  ],
-})
+    plugins: [react()],
+    server: {
+        port: 3000,
+        proxy: {
+            "/api": "http://localhost:8080"
+        }
+    }
+});

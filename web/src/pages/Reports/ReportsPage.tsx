@@ -1,9 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ReportsApi } from "../../services/api";
+import { useAsync } from "../../hooks/useAync";
 import type { TotalsByCategoryResponse, TotalsByPersonResponse } from "../../types/domain";
 import { formatCurrencyBRL } from "../../utils/format";
 import { PageHeader } from "../../components/ui/PageHeader/PageHeader";
 import { Card } from "../../components/ui/Card/Card";
 import { Button } from "../../components/ui/Button/Button";
+import { Spinner } from "../../components/ui/Spinner/Spinner";
+import { Alert } from "../../components/ui/Alert/Alert";
 import { Table } from "../../components/ui/Table/Table";
 import { Stat } from "../../components/ui/Stat/Stat";
 import styles from "./ReportsPage.module.css";
@@ -15,8 +19,19 @@ function tone(balance: number): "ok" | "warn" | "neutral" {
 }
 
 export function ReportsPage() {
-    const [byPerson] = useState<TotalsByPersonResponse | null>(null);
-    const [byCategory] = useState<TotalsByCategoryResponse | null>(null)
+    const [byPerson, setByPerson] = useState<TotalsByPersonResponse | null>(null);
+    const [byCategory, setByCategory] = useState<TotalsByCategoryResponse | null>(null);
+
+    const loadAsync = useAsync(async () => {
+        const [p, c] = await Promise.all([ReportsApi.totalsByPerson(), ReportsApi.totalsByCategory()]);
+        setByPerson(p);
+        setByCategory(c);
+    });
+
+    useEffect(() => {
+        loadAsync.run().catch(() => void 0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const personRows = useMemo(() => {
         const items = byPerson?.items ?? [];
@@ -50,10 +65,13 @@ export function ReportsPage() {
                 title="Relatórios"
                 subtitle="Totais por pessoa e por categoria. O saldo é calculado como Receita – Despesa."
                 actions={
-                    <Button>
+                    <Button variant="ghost" onClick={() => loadAsync.run().catch(() => void 0)} disabled={loadAsync.loading}>
+                        {loadAsync.loading ? <Spinner /> : "Recarregar"}
                     </Button>
                 }
             />
+
+            {loadAsync.error && <Alert title="Erro" message={loadAsync.error} variant="error" />}
 
             <div className={styles.kpis}>
                 <Stat
