@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ReportsApi } from "../../services/api";
 import { useAsync } from "../../hooks/useAync";
-import type { TotalsByCategoryResponse, TotalsByPersonResponse } from "../../types/domain";
+import type { TotalsReportResponse } from "../../types/domain";
 import { formatCurrencyBRL } from "../../utils/format";
 import { PageHeader } from "../../components/ui/PageHeader/PageHeader";
 import { Card } from "../../components/ui/Card/Card";
@@ -19,8 +19,8 @@ function tone(balance: number): "ok" | "warn" | "neutral" {
 }
 
 export function ReportsPage() {
-    const [byPerson, setByPerson] = useState<TotalsByPersonResponse | null>(null);
-    const [byCategory, setByCategory] = useState<TotalsByCategoryResponse | null>(null);
+    const [byPerson, setByPerson] = useState<TotalsReportResponse | null>(null);
+    const [byCategory, setByCategory] = useState<TotalsReportResponse | null>(null);
 
     const loadAsync = useAsync(async () => {
         const [p, c] = await Promise.all([ReportsApi.totalsByPerson(), ReportsApi.totalsByCategory()]);
@@ -36,24 +36,24 @@ export function ReportsPage() {
     const personRows = useMemo(() => {
         const items = byPerson?.items ?? [];
         return [...items]
-            .sort((a, b) => a.personName.localeCompare(b.personName))
+            .sort((a, b) => a.name.localeCompare(b.name))
             .map((i) => [
-                <div key={i.personId} className={styles.primary}>{i.personName}</div>,
-                <span key={i.personId + "-in"} className={styles.moneyOk}>{formatCurrencyBRL(i.totals.totalIncome)}</span>,
-                <span key={i.personId + "-ex"} className={styles.moneyWarn}>{formatCurrencyBRL(i.totals.totalExpense)}</span>,
-                <span key={i.personId + "-bal"} className={styles.money}>{formatCurrencyBRL(i.totals.balance)}</span>
+                <div key={i.id} className={styles.primary}>{i.name}</div>,
+                <span key={i.id + "-in"} className={styles.moneyOk}>{formatCurrencyBRL(i.totalIncome)}</span>,
+                <span key={i.id + "-ex"} className={styles.moneyWarn}>{formatCurrencyBRL(i.totalExpense)}</span>,
+                <span key={i.id + "-bal"} className={styles.money}>{formatCurrencyBRL(i.balance)}</span>
             ]);
     }, [byPerson]);
 
     const categoryRows = useMemo(() => {
         const items = byCategory?.items ?? [];
         return [...items]
-            .sort((a, b) => a.categoryDescription.localeCompare(b.categoryDescription))
+            .sort((a, b) => a.name.localeCompare(b.name))
             .map((i) => [
-                <div key={i.categoryId} className={styles.primary}>{i.categoryDescription}</div>,
-                <span key={i.categoryId + "-in"} className={styles.moneyOk}>{formatCurrencyBRL(i.totals.totalIncome)}</span>,
-                <span key={i.categoryId + "-ex"} className={styles.moneyWarn}>{formatCurrencyBRL(i.totals.totalExpense)}</span>,
-                <span key={i.categoryId + "-bal"} className={styles.money}>{formatCurrencyBRL(i.totals.balance)}</span>
+                <div key={i.id} className={styles.primary}>{i.name}</div>,
+                <span key={i.id + "-in"} className={styles.moneyOk}>{formatCurrencyBRL(i.totalIncome)}</span>,
+                <span key={i.id + "-ex"} className={styles.moneyWarn}>{formatCurrencyBRL(i.totalExpense)}</span>,
+                <span key={i.id + "-bal"} className={styles.money}>{formatCurrencyBRL(i.balance)}</span>
             ]);
     }, [byCategory]);
 
@@ -65,9 +65,29 @@ export function ReportsPage() {
                 title="Relatórios"
                 subtitle="Totais por pessoa e por categoria. O saldo é calculado como Receita – Despesa."
                 actions={
-                    <Button variant="ghost" onClick={() => loadAsync.run().catch(() => void 0)} disabled={loadAsync.loading}>
-                        {loadAsync.loading ? <Spinner /> : "Recarregar"}
-                    </Button>
+                    <div className={styles.headerActions}>
+                        <Button
+                            variant="ghost"
+                            onClick={() => loadAsync.run().catch(() => void 0)}
+                            disabled={loadAsync.loading}
+                        >
+                            {loadAsync.loading ? <Spinner /> : "Recarregar"}
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            onClick={() => window.open(ReportsApi.totalsByPersonPdfUrl(), "_blank")}
+                        >
+                            PDF Pessoas
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            onClick={() => window.open(ReportsApi.totalsByCategoryPdfUrl(), "_blank")}
+                        >
+                            PDF Categorias
+                        </Button>
+                    </div>
                 }
             />
 

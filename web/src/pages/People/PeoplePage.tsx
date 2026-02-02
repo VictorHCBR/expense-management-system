@@ -31,7 +31,7 @@ export function PeoplePage() {
 
     const listAsync = useAsync(async () => {
         const data = await PeopleApi.list();
-        setPeople(data);
+        setPeople(data.items);
     });
 
     const createAsync = useAsync(async () => {
@@ -43,8 +43,13 @@ export function PeoplePage() {
 
     const updateAsync = useAsync(async () => {
         if (!editing) return;
-        const updated = await PeopleApi.update(editing.id, { name: editName, age: editAge });
-        setPeople((prev) => prev.map((p) => (p.id === updated.id ? updated : p)).sort((a, b) => a.name.localeCompare(b.name)));
+        // A API retorna 204 (NoContent) no update, então atualizamos o estado local.
+        await PeopleApi.update(editing.id, { name: editName, age: editAge });
+        setPeople((prev) =>
+            prev
+                .map((p) => (p.id === editing.id ? { ...p, name: editName, age: editAge } : p))
+                .sort((a, b) => a.name.localeCompare(b.name))
+        );
         setEditing(null);
     });
 
