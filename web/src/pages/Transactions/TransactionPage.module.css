@@ -1,0 +1,44 @@
+.formActions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+.txCell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.txTitle {
+    font-weight: 900;
+}
+
+.subCell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.primary {
+    font-weight: 800;
+}
+
+.sub {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.value {
+    font-weight: 900;
+}
