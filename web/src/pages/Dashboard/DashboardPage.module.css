@@ -1,0 +1,30 @@
+.grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.link {
+    font-weight: 800;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface1);
+}
+
+.link:hover {
+    background: var(--surface2);
+}
+
+.text {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

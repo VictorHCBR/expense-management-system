@@ -1,18 +1,23 @@
-import { useMemo, useState } from "react";
-import type { Guid, PersonResponse } from "../../types/domain";
+import { useEffect, useMemo, useState } from "react";
+import { PeopleApi } from "../../services/api";
+import { useAsync } from "../../hooks/useAync";
+import type { PersonResponse, Guid } from "../../types/domain";
+import { nonEmpty, maxLen } from "../../utils/validation";
 import type { FieldErrors } from "../../utils/validation";
 import { PageHeader } from "../../components/ui/PageHeader/PageHeader";
 import { Card } from "../../components/ui/Card/Card";
 import { Input } from "../../components/ui/Input/Input";
 import { Button } from "../../components/ui/Button/Button";
 import { Table } from "../../components/ui/Table/Table";
+import { Alert } from "../../components/ui/Alert/Alert";
+import { Spinner } from "../../components/ui/Spinner/Spinner";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog/ConfirmDialog";
 import styles from "./PeoplePage.module.css";
 
 type CreateFields = "name" | "age";
 
 export function PeoplePage() {
-    const [people] = useState<PersonResponse[]>([]);
+    const [people, setPeople] = useState<PersonResponse[]>([]);
     const [createName, setCreateName] = useState("");
     const [createAge, setCreateAge] = useState<number>(0);
     const [createErrors, setCreateErrors] = useState<FieldErrors<CreateFields>>({});
@@ -23,6 +28,36 @@ export function PeoplePage() {
     const [editErrors, setEditErrors] = useState<FieldErrors<CreateFields>>({});
 
     const [deleteId, setDeleteId] = useState<Guid | null>(null);
+
+    const listAsync = useAsync(async () => {
+        const data = await PeopleApi.list();
+        setPeople(data);
+    });
+
+    const createAsync = useAsync(async () => {
+        const created = await PeopleApi.create({ name: createName, age: createAge });
+        setPeople((prev) => [created, ...prev].sort((a, b) => a.name.localeCompare(b.name)));
+        setCreateName("");
+        setCreateAge(0);
+    });
+
+    const updateAsync = useAsync(async () => {
+        if (!editing) return;
+        const updated = await PeopleApi.update(editing.id, { name: editName, age: editAge });
+        setPeople((prev) => prev.map((p) => (p.id === updated.id ? updated : p)).sort((a, b) => a.name.localeCompare(b.name)));
+        setEditing(null);
+    });
+
+    const deleteAsync = useAsync(async () => {
+        if (!deleteId) return;
+        await PeopleApi.remove(deleteId);
+        setPeople((prev) => prev.filter((p) => p.id !== deleteId));
+    });
+
+    useEffect(() => {
+        listAsync.run().catch(() => void 0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const rows = useMemo(() => {
         return people.map((p) => [
@@ -51,9 +86,38 @@ export function PeoplePage() {
         ]);
     }, [people]);
 
+    function validate(name: string, age: number): FieldErrors<CreateFields> {
+        const e: FieldErrors<CreateFields> = {};
+        if (!nonEmpty(name)) e.name = "Nome é obrigatório.";
+        else if (!maxLen(name, 200)) e.name = "Nome deve ter no máximo 200 caracteres.";
+
+        if (!Number.isFinite(age) || age < 0) e.age = "Idade deve ser um número >= 0.";
+        return e;
+    }
+
+    function submitCreate() {
+        const e = validate(createName, createAge);
+        setCreateErrors(e);
+        if (Object.keys(e).length > 0) return;
+
+        createAsync.run().catch(() => void 0);
+    }
+
+    function submitEdit() {
+        const e = validate(editName, editAge);
+        setEditErrors(e);
+        if (Object.keys(e).length > 0) return;
+
+        updateAsync.run().catch(() => void 0);
+    }
+
     return (
         <div className="stack">
             <PageHeader title="Pessoas" subtitle="CRUD completo. Ao excluir uma pessoa, as transações são removidas automaticamente (cascade no banco)." />
+
+            {(listAsync.error || createAsync.error || updateAsync.error || deleteAsync.error) && (
+                <Alert title="Erro" message={listAsync.error || createAsync.error || updateAsync.error || deleteAsync.error || "Erro"} variant="error" />
+            )}
 
             {editing && (
                 <Card
@@ -83,6 +147,12 @@ export function PeoplePage() {
                             error={editErrors.age}
                         />
                     </div>
+
+                    <div className={styles.formActions}>
+                        <Button onClick={submitEdit} disabled={updateAsync.loading}>
+                            {updateAsync.loading ? <Spinner /> : "Salvar"}
+                        </Button>
+                    </div>
                 </Card>
             )}
 
@@ -107,7 +177,8 @@ export function PeoplePage() {
                 </div>
 
                 <div className={styles.formActions}>
-                    <Button>
+                    <Button onClick={submitCreate} disabled={createAsync.loading}>
+                        {createAsync.loading ? <Spinner /> : "Criar"}
                     </Button>
                     <Button variant="ghost" onClick={() => { setCreateName(""); setCreateAge(0); setCreateErrors({}); }}>
                         Limpar
@@ -118,6 +189,11 @@ export function PeoplePage() {
             <Card
                 title="Lista"
                 description="Lista ordenada por nome."
+                actions={
+                    <Button variant="ghost" onClick={() => listAsync.run().catch(() => void 0)} disabled={listAsync.loading}>
+                        {listAsync.loading ? <Spinner /> : "Recarregar"}
+                    </Button>
+                }
             >
                 <Table headers={["Pessoa", "Idade", "Ações"]} rows={rows} />
             </Card>
@@ -127,7 +203,7 @@ export function PeoplePage() {
                 title="Excluir pessoa?"
                 message="Isso irá remover a pessoa e também todas as transações associadas."
                 confirmText="Excluir"
-                onConfirm={() => setDeleteId(null)}
+                onConfirm={() => deleteAsync.run().catch(() => void 0)}
                 onClose={() => setDeleteId(null)}
             />
         </div>
