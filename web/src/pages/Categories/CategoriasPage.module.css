@@ -1,0 +1,25 @@
+.formActions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.descCell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.desc {
+    font-weight: 900;
+}
+
+.sub {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.muted {
+    color: var(--muted);
+}

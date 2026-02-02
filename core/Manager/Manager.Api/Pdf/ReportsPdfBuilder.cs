@@ -18,7 +18,7 @@ public static class ReportsPdfBuilder
                 page.DefaultTextStyle(x => x.FontSize(10));
 
                 page.Header()
-                    .Row(row =>
+                    .Row(row => 
                     {
                         row.RelativeItem().Column(col =>
                         {
