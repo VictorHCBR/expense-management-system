@@ -103,7 +103,6 @@ export function TransactionsPage() {
             return [
                 <div className={styles.txCell} key={t.id}>
                     <div className={styles.txTitle}>{t.description}</div>
-                    <div className={styles.sub}>ID: {t.id}</div>
                 </div>,
                 <Badge key={t.id + "-type"} text={transactionTypeLabel(t.type)} variant={badgeVariant} />,
                 <span key={t.id + "-amount"} className={styles.value}>{formatCurrencyBRL(t.amount)}</span>,

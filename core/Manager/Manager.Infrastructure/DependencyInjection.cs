@@ -15,7 +15,7 @@ public static class DependencyInjection
     {
         services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseNpgsql(config.GetConnectionString("Postgres"));
+            options.UseNpgsql(config.GetConnectionString("Default"));
         });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
