@@ -31,6 +31,7 @@ public sealed class TransactionsService(
         {
             CategoryPurpose.Expense => request.Type == TransactionType.Expense,
             CategoryPurpose.Income => request.Type == TransactionType.Income,
+            CategoryPurpose.Both => request.Type == TransactionType.Expense || request.Type == TransactionType.Income,
             _ => false
         };
 
